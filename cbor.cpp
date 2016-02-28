@@ -40,7 +40,7 @@ namespace CBOR
     {
         QByteArray ret;
 
-        if (v < IntSize::s8)
+        if (v < TypeValue::nextByte)
         {
             ret += mkHeader(type, (uchar) v & 0x1F);
         }
@@ -48,22 +48,22 @@ namespace CBOR
         {
             if (v <= 0xFF)
             {
-                ret += mkHeader(type, IntSize::s8);
+                ret += mkHeader(type, TypeValue::nextByte);
                 ret += (char) v;
             }
             else if (v <= 0xFFFF)
             {
-                ret += mkHeader(type, IntSize::s16);
+                ret += mkHeader(type, TypeValue::next2Bytes);
                 ret += nativeToBigEndian((quint16) v);
             }
             else if (v <= 0xFFFFFFFF)
             {
-                ret += mkHeader(type, IntSize::s32);
+                ret += mkHeader(type, TypeValue::next4Bytes);
                 ret += nativeToBigEndian((quint32) v);
             }
             else
             {
-                ret += mkHeader(type, IntSize::s64);
+                ret += mkHeader(type, TypeValue::next8Bytes);
                 ret += nativeToBigEndian((quint64) v);
             }
         }
@@ -74,22 +74,22 @@ namespace CBOR
     quint64 parseHeader(QByteArray& data) {
         auto sz = ((uchar) data.at(0)) & 0x1F;
         ulong val;
-        if (sz < IntSize::s8) {
+        if (sz < TypeValue::nextByte) {
             val  = sz;
             data = data.mid(1);
-        } else if (sz == IntSize::s8) {
+        } else if (sz == TypeValue::nextByte) {
             val  = (uchar) data.at(1);
             data = data.mid(2);
-        } else if (sz == IntSize::s16) {
+        } else if (sz == TypeValue::next2Bytes) {
             val  = qFromBigEndian<quint16>((const uchar *) data.data() + 1);
             data = data.mid(3);
         }
-        else if (sz == IntSize::s32)
+        else if (sz == TypeValue::next4Bytes)
         {
             val  = qFromBigEndian<quint32>((const uchar *) data.data() + 1);
             data = data.mid(5);
         }
-        else if (sz == IntSize::s64)
+        else if (sz == TypeValue::next8Bytes)
         {
             val  = qFromBigEndian<quint64>((const uchar *) data.data() + 1);
             data = data.mid(9);
@@ -155,7 +155,7 @@ namespace CBOR
                     ret = map;
                 }
                 break;
-            case MajorType::tag:
+            case MajorType::tagged:
                 // TODO: Tags
                 break;
             case MajorType::other: {

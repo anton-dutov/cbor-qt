@@ -14,16 +14,16 @@ namespace CBOR
         str         = 3,
         array       = 4,
         map         = 5,
-        tag         = 6,
+        tagged      = 6,
         other       = 7,
     };
 
-    enum IntSize: uchar
+    enum TypeValue: uchar
     {
-        s8  = 24,
-        s16 = 25,
-        s32 = 26,
-        s64 = 27,
+        nextByte   = 24,
+        next2Bytes = 25,
+        next4Bytes = 26,
+        next8Bytes = 27,
     };
 
     enum OtherType : uchar
@@ -32,7 +32,6 @@ namespace CBOR
         true_     = 21,
         null_     = 22,
         undefined = 23,
-        nextByte  = 24,
         float16   = 25,
         float32   = 26,
         float64   = 27,
