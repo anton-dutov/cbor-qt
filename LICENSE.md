@@ -1,1 +1,1 @@
-MIT
+BOOST
