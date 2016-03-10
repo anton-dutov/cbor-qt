@@ -243,7 +243,15 @@ QByteArray CBOR::pack(const QVariant& v) {
         case QVariant::List: {
                 auto array = v.toList();
                 ret += mkHeaderEx(MajorType::array, array.length());
-                for(QVariant item: array) {
+                for(auto &item: array) {
+                    ret += pack(item);
+                }
+            }
+            break;
+        case QVariant::StringList: {
+                auto array = v.toStringList();
+                ret += mkHeaderEx(MajorType::array, array.length());
+                for(auto &item: array) {
                     ret += pack(item);
                 }
             }
