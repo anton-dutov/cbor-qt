@@ -1,6 +1,9 @@
 #include "cbor.h"
 
 #include <QtEndian>
+#include <QTime>
+#include <QDate>
+#include <QDateTime>
 
 namespace CBOR
 {
@@ -264,6 +267,15 @@ QByteArray CBOR::pack(const QVariant& v) {
                     ret += pack(map[key]);
                 }
             }
+            break;
+        case QVariant::Time:
+            ret += pack(v.toTime().toString("HH:mm:ss"));
+            break;
+        case QVariant::Date:
+            ret += pack(v.toDate().toString("yyyy-MM-dd"));
+            break;
+        case QVariant::DateTime:
+            ret += pack(v.toDateTime().toString("yyyy-MM-ddTHH:mm:ss"));
             break;
         default:
             ;   // TODO: Unsupported
