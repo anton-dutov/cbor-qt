@@ -27,6 +27,7 @@ inline QByteArray nativeToBigEndian(quint64 v) {
     qToBigEndian(v, reinterpret_cast<uchar *>(ret.data()));
     return ret;
 }
+
 inline QByteArray nativeToBigEndian(double v) {
     QByteArray ret;
     ret.resize(8);
@@ -63,22 +64,22 @@ inline QByteArray mkHeaderEx(MajorType type, quint64 v) {
 
 
 quint64 parseHeader(QByteArray &data) {
-    auto    sz  = uchar(data.at(0)) & 0x1F;
+    auto    sz  = static_cast<TypeValue>(data.at(0) & 0x1F);
     quint64 val = 0;
     if (sz < TypeValue::nextByte) {
-        val  = sz;
+        val  = static_cast<uchar>(sz);
         data = data.mid(1);
     } else if (sz == TypeValue::nextByte) {
-        val  = (uchar) data.at(1);
+        val  = static_cast<uchar>(data.at(1));
         data = data.mid(2);
     } else if (sz == TypeValue::next2Bytes) {
-        val  = qFromBigEndian<quint16>((const uchar *) data.data() + 1);
+        val  = qFromBigEndian<quint16>(reinterpret_cast<const uchar *>(data.data() + 1));
         data = data.mid(3);
     } else if (sz == TypeValue::next4Bytes) {
-        val  = qFromBigEndian<quint32>((const uchar *) data.data() + 1);
+        val  = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(data.data() + 1));
         data = data.mid(5);
     } else if (sz == TypeValue::next8Bytes) {
-        val  = qFromBigEndian<quint64>((const uchar *) data.data() + 1);
+        val  = qFromBigEndian<quint64>(reinterpret_cast<const uchar *>(data.data() + 1));
         data = data.mid(9);
     } else {
         // TODO: Not implemented;
@@ -91,31 +92,31 @@ inline QVariant _unpack(QByteArray &data) {
     QVariant ret;
 
     if (data.length()) {
-        auto header = (uchar) data.at(0);
+        auto header = static_cast<uchar>(data.at(0));
         switch (header >> 5) {
             case MajorType::positiveInt: {
                 auto v = parseHeader(data);
                 if (v <= 0xFFFFFFFF) {
-                    ret = (quint32) v;
+                    ret = static_cast<quint32>(v);
                 } else {
-                    ret = (quint64) v;
+                    ret = static_cast<quint64>(v);
                 }
             } break;
             case MajorType::negativeInt: {
                 auto v = parseHeader(data) + 1;
                 if (v <= 0xFFFFFFFF) {
-                    ret = (qint32) -v;
+                    ret = static_cast<quint32>(-v);
                 } else {
-                    ret = (qint64) -v;
+                    ret = static_cast<quint64>(-v);
                 }
             } break;
             case MajorType::bytes: {
-                auto sz = parseHeader(data);
+                auto sz = static_cast<int>(parseHeader(data));
                 ret     = data.mid(0, sz);
                 data    = data.mid(sz);
             } break;
             case MajorType::str: {
-                auto sz = parseHeader(data);
+                auto sz = static_cast<int>(parseHeader(data));
                 ret     = QString(data.mid(0, sz));
                 data    = data.mid(sz);
             } break;
@@ -181,7 +182,7 @@ QByteArray CBOR::pack(const QVariant &v) {
                 tp  = MajorType::negativeInt;
                 val = qAbs(val) - 1;
             }
-            ret += mkHeaderEx(tp, val);
+            ret += mkHeaderEx(tp, static_cast<quint64>(val));
         } break;
         case QVariant::UInt:
         case QVariant::ULongLong: {
@@ -194,38 +195,42 @@ QByteArray CBOR::pack(const QVariant &v) {
         } break;
         case QVariant::ByteArray: {
             auto b = v.toByteArray();
-            ret += mkHeaderEx(MajorType::bytes, b.length());
+            ret += mkHeaderEx(MajorType::bytes, static_cast<quint64>(b.length()));
             ret += b;
         } break;
         case QVariant::String: {
             auto s = v.toString();
-            ret += mkHeaderEx(MajorType::str, s.length());
+            ret += mkHeaderEx(MajorType::str, static_cast<quint64>(s.length()));
             ret += s.toLocal8Bit();
         } break;
         case QVariant::List: {
             auto array = v.toList();
-            ret += mkHeaderEx(MajorType::array, array.length());
+            ret += mkHeaderEx(MajorType::array, static_cast<quint64>(array.length()));
             for (auto &item : array) {
                 ret += pack(item);
             }
         } break;
         case QVariant::StringList: {
             auto array = v.toStringList();
-            ret += mkHeaderEx(MajorType::array, array.length());
+            ret += mkHeaderEx(MajorType::array, static_cast<quint64>(array.length()));
             for (auto &item : array) {
                 ret += pack(item);
             }
         } break;
         case QVariant::Map: {
             auto map = v.toMap();
-            ret += mkHeaderEx(MajorType::map, map.size());
+            ret += mkHeaderEx(MajorType::map, static_cast<quint64>(map.size()));
             for (QString key : map.keys()) {
                 ret += pack(key);
                 ret += pack(map[key]);
             }
         } break;
-        case QVariant::Time: ret += pack(v.toTime().toString("HH:mm:ss")); break;
-        case QVariant::Date: ret += pack(v.toDate().toString("yyyy-MM-dd")); break;
+        case QVariant::Time:
+            ret += pack(v.toTime().toString("HH:mm:ss"));
+            break;
+        case QVariant::Date:
+            ret += pack(v.toDate().toString("yyyy-MM-dd"));
+            break;
         case QVariant::DateTime:
             ret += pack(v.toDateTime().toString("yyyy-MM-ddTHH:mm:ss.zzz"));
             break;
