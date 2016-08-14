@@ -66,19 +66,19 @@ quint64 parseHeader(QByteArray &data) {
     auto    sz  = uchar(data.at(0)) & 0x1F;
     quint64 val = 0;
     if (sz < TypeValue::nextByte) {
-        val  = quint64(sz);
+        val  = sz;
         data = data.mid(1);
     } else if (sz == TypeValue::nextByte) {
-        val  = quint64(data.at(1));
+        val  = (uchar) data.at(1);
         data = data.mid(2);
     } else if (sz == TypeValue::next2Bytes) {
-        val  = quint64(qFromBigEndian<quint16>((const uchar *) data.data() + 1));
+        val  = qFromBigEndian<quint16>((const uchar *) data.data() + 1);
         data = data.mid(3);
     } else if (sz == TypeValue::next4Bytes) {
-        val  = quint64(qFromBigEndian<quint32>((const uchar *) data.data() + 1));
+        val  = qFromBigEndian<quint32>((const uchar *) data.data() + 1);
         data = data.mid(5);
     } else if (sz == TypeValue::next8Bytes) {
-        val  = quint64(qFromBigEndian<quint64>((const uchar *) data.data() + 1));
+        val  = qFromBigEndian<quint64>((const uchar *) data.data() + 1);
         data = data.mid(9);
     } else {
         // TODO: Not implemented;
