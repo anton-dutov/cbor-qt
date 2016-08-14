@@ -275,7 +275,7 @@ QByteArray CBOR::pack(const QVariant& v) {
             ret += pack(v.toDate().toString("yyyy-MM-dd"));
             break;
         case QVariant::DateTime:
-            ret += pack(v.toDateTime().toString("yyyy-MM-ddTHH:mm:ss"));
+            ret += pack(v.toDateTime().toString("yyyy-MM-ddTHH:mm:ss.zzz"));
             break;
         default:
             ;   // TODO: Unsupported
