@@ -117,7 +117,7 @@ inline QVariant _unpack(QByteArray &data) {
             } break;
             case MajorType::str: {
                 auto sz = static_cast<int>(parseHeader(data));
-                ret     = QString(data.mid(0, sz));
+                ret     = QString::fromUtf8(data.mid(0, sz));
                 data    = data.mid(sz);
             } break;
             case MajorType::array: {
@@ -199,9 +199,9 @@ QByteArray CBOR::pack(const QVariant &v) {
             ret += b;
         } break;
         case QVariant::String: {
-            auto s = v.toString();
+            auto s = v.toString().toUtf8();
             ret += mkHeaderEx(MajorType::str, static_cast<quint64>(s.length()));
-            ret += s.toLocal8Bit();
+            ret += s;
         } break;
         case QVariant::List: {
             auto array = v.toList();
