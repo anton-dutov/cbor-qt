@@ -4,6 +4,7 @@
 #include <QTime>
 #include <QDate>
 #include <QDateTime>
+#include <QStringList>
 
 namespace CBOR {
 
