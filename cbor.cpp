@@ -151,12 +151,14 @@ inline QVariant _unpack(QByteArray &data) {
                 } else if (st == OtherType::null_) {
                     ret = QVariant();
                 } else if (st == OtherType::float32) {
-                    auto fPtr = reinterpret_cast<float *>(data.data());
-                    ret       = double(*fPtr);
+                    float out=0.;
+                    qbswap(*(const float *)data.constData(), reinterpret_cast<uchar *>(&out));
+                    ret       = out;
                     data      = data.mid(4);
                 } else if (st == OtherType::float64) {
-                    auto fPtr = reinterpret_cast<double *>(data.data());
-                    ret       = *fPtr;
+                    double out=0.;
+                    qbswap(*(const double *)data.constData(), reinterpret_cast<uchar *>(&out));
+                    ret       = out;
                     data      = data.mid(8);
                 }
             } break;
@@ -189,9 +191,8 @@ QByteArray CBOR::pack(const QVariant &v) {
             ret += mkHeaderEx(MajorType::positiveInt, v.toULongLong());
         } break;
         case QVariant::Double: {
-            double val = v.toDouble();
             ret += mkHeader(MajorType::other, OtherType::float64);
-            ret.append(reinterpret_cast<char *>(&val), 8);
+            ret.append(nativeToBigEndian(v.toDouble()));
         } break;
         case QVariant::ByteArray: {
             auto b = v.toByteArray();
