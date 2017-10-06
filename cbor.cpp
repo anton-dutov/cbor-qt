@@ -4,6 +4,7 @@
 #include <QTime>
 #include <QDate>
 #include <QDateTime>
+#include <QStringList>
 
 namespace CBOR {
 
@@ -117,7 +118,7 @@ inline QVariant _unpack(QByteArray &data) {
             } break;
             case MajorType::str: {
                 auto sz = static_cast<int>(parseHeader(data));
-                ret     = QString(data.mid(0, sz));
+                ret     = QString::fromUtf8(data.mid(0, sz));
                 data    = data.mid(sz);
             } break;
             case MajorType::array: {
@@ -151,12 +152,14 @@ inline QVariant _unpack(QByteArray &data) {
                 } else if (st == OtherType::null_) {
                     ret = QVariant();
                 } else if (st == OtherType::float32) {
-                    auto fPtr = reinterpret_cast<float *>(data.data());
-                    ret       = double(*fPtr);
+                    float out=0.;
+                    qbswap(*(const float *)data.constData(), reinterpret_cast<uchar *>(&out));
+                    ret       = out;
                     data      = data.mid(4);
                 } else if (st == OtherType::float64) {
-                    auto fPtr = reinterpret_cast<double *>(data.data());
-                    ret       = *fPtr;
+                    double out=0.;
+                    qbswap(*(const double *)data.constData(), reinterpret_cast<uchar *>(&out));
+                    ret       = out;
                     data      = data.mid(8);
                 }
             } break;
@@ -189,9 +192,8 @@ QByteArray CBOR::pack(const QVariant &v) {
             ret += mkHeaderEx(MajorType::positiveInt, v.toULongLong());
         } break;
         case QVariant::Double: {
-            double val = v.toDouble();
             ret += mkHeader(MajorType::other, OtherType::float64);
-            ret.append(reinterpret_cast<char *>(&val), 8);
+            ret.append(nativeToBigEndian(v.toDouble()));
         } break;
         case QVariant::ByteArray: {
             auto b = v.toByteArray();
@@ -199,9 +201,9 @@ QByteArray CBOR::pack(const QVariant &v) {
             ret += b;
         } break;
         case QVariant::String: {
-            auto s = v.toString();
+            auto s = v.toString().toUtf8();
             ret += mkHeaderEx(MajorType::str, static_cast<quint64>(s.length()));
-            ret += s.toLocal8Bit();
+            ret += s;
         } break;
         case QVariant::List: {
             auto array = v.toList();
