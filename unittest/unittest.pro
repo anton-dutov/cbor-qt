@@ -2,7 +2,7 @@ include(../cbor.pri)
 
 QT      += testlib
 TEMPLATE = app
-TARGET   = uinttest
+TARGET   = unittest
 
 INCLUDEPATH += .
 
