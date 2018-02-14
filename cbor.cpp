@@ -1,5 +1,7 @@
 #include "cbor.h"
 
+#include <cmath>
+
 #include <QtEndian>
 #include <QTime>
 #include <QDate>
@@ -89,6 +91,25 @@ quint64 parseHeader(QByteArray &data) {
     return val;
 }
 
+inline float parseFloat16(QByteArray data) {
+    float val = 0;
+    if (data.length() == 2)
+    {
+        int half = (((uint8_t)data[0]) << 8) + ((uint8_t)data[1]);
+        int exp = (half >> 10) & 0x1f;
+        int mant = half & 0x3ff;
+        if (exp == 0) {
+        val = ldexp(mant, -24);
+        } else if (exp != 31) {
+        val = ldexp(mant + 1024, exp - 25);
+        } else {
+        val = (mant == 0) ? INFINITY : NAN;
+        }
+        val = (half & 0x8000) ? -val : val;
+    }
+    return val;
+}
+
 inline QVariant _unpack(QByteArray &data) {
     QVariant ret;
 
@@ -151,6 +172,9 @@ inline QVariant _unpack(QByteArray &data) {
                     ret = true;
                 } else if (st == OtherType::null_) {
                     ret = QVariant();
+                } else if (st == OtherType::float16) {
+                    ret = parseFloat16(data.left(2));
+                    data = data.mid(2);
                 } else if (st == OtherType::float32) {
                     float out=0.;
                     qbswap(*(const float *)data.constData(), reinterpret_cast<uchar *>(&out));

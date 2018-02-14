@@ -87,6 +87,21 @@ private slots:
         QVERIFY(CBOR::unpack(CBOR::pack(x)) == x);
     }
 
+    void testFloat16()
+    {
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F90000")) == 0.0);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F98000")) == -0.0);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F93C00")) == 1.0);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F93E00")) == 1.5);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F97BFF")) == 65504.0);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F90001")) == 0.00000005960464477539063);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F90400")) == 0.00006103515625);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F9C400")) == -4.0);
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F97C00")) == Q_INFINITY);
+        QVERIFY(qIsNaN(CBOR::unpack(QByteArray::fromHex("F97E00")).toFloat()));
+        QVERIFY(CBOR::unpack(QByteArray::fromHex("F9FC00")) == -Q_INFINITY);
+    }
+
     void testArray()
     {
         QVariantList lst;

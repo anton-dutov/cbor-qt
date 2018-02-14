@@ -2,7 +2,7 @@ CBOR
 ====
 RFC 7049 Concise Binary Object Representation
 
-Qt İmplementation
+Qt Implementation
 
 Suported types of QVariant
 * Invalid (null)
@@ -15,11 +15,9 @@ Suported types of QVariant
 * Map
 
 Notes
-* UnitTests
-* Simple include to project
-* Intergers is packed to smallest value
+* Unit tests
+* Simple to include to project
+* Integers are packed to smallest value
 * Floats always packed as double
-* Floats unpacks as double
-* Half precision not supported yet
-* Taggget items not suuported yet
+* Tagged items not supported yet
 
