@@ -10,6 +10,15 @@
 
 namespace CBOR {
 
+inline void qbswap_helper(const uchar *src, uchar *dest, int size) {
+    for(int i=0; i<size; ++i)
+        dest[i]=src[size - 1 - i];
+}
+
+template <typename T> inline void qbswap(const T src, uchar *dest) {
+    qbswap_helper(reinterpret_cast<const uchar *>(&src), dest, sizeof(T));
+}
+
 inline QByteArray nativeToBigEndian(quint16 v) {
     QByteArray ret;
     ret.resize(2);
@@ -34,7 +43,7 @@ inline QByteArray nativeToBigEndian(quint64 v) {
 inline QByteArray nativeToBigEndian(double v) {
     QByteArray ret;
     ret.resize(8);
-    qToBigEndian(v, reinterpret_cast<uchar *>(ret.data()));
+    qbswap<double>(v, reinterpret_cast<uchar *>(ret.data()));
     return ret;
 }
 
