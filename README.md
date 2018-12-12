@@ -1,7 +1,7 @@
 CBOR
 ====
 
-**Deprecated since Qt 5.12**
+**Deprecated since Qt 5.12 where built-in CBOR support**
 
 RFC 7049 Concise Binary Object Representation
 
