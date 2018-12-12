@@ -1,5 +1,8 @@
 CBOR
 ====
+
+**Deprecated since Qt 5.12**
+
 RFC 7049 Concise Binary Object Representation
 
 Qt Implementation
